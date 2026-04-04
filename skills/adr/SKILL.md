@@ -75,6 +75,10 @@ bash scripts/adr-index.sh docs/decisions/ accepted
 3. 結果を壁打ちの文脈で報告する（複数並列も可）
 4. worktree は結果返却後に自動破棄（コードは残らない）
 
+### バリデーション
+
+ADR ファイルを作成・更新したら必ず `scripts/adr-validate.sh <file>` を実行し、フォーマット違反があればその場で修正すること。
+
 ### 補足
 
 - 新規作成・更新時は `adr-index.sh` で関連ADRを特定し矛盾チェック
