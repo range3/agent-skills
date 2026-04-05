@@ -3,11 +3,26 @@
 # Usage:
 #   bash adr-index.sh docs/decisions/
 #   bash adr-index.sh docs/decisions/ accepted
+#   bash adr-index.sh docs/decisions/ --markdown
 
 DIR="${1:-.}"
-FILTER_STATUS="${2:-}"
+FILTER_STATUS=""
+MARKDOWN=false
 
-echo -e "file\tstatus\tdate\tdecision"
+shift || true
+for arg in "$@"; do
+  case "$arg" in
+    --markdown) MARKDOWN=true ;;
+    *) FILTER_STATUS="$arg" ;;
+  esac
+done
+
+if $MARKDOWN; then
+  echo "| file | status | date | decision |"
+  echo "|------|--------|------|----------|"
+else
+  echo -e "file\tstatus\tdate\tdecision"
+fi
 
 for file in "$DIR"/[0-9][0-9][0-9][0-9]-*.md; do
   [ -f "$file" ] || continue
@@ -18,5 +33,9 @@ for file in "$DIR"/[0-9][0-9][0-9][0-9]-*.md; do
   if [ -n "$FILTER_STATUS" ] && [ "$status" != "$FILTER_STATUS" ]; then
     continue
   fi
-  echo -e "$(basename "$file")\t${status}\t${date}\t${decision}"
+  if $MARKDOWN; then
+    echo "| $(basename "$file") | ${status} | ${date} | ${decision} |"
+  else
+    echo -e "$(basename "$file")\t${status}\t${date}\t${decision}"
+  fi
 done

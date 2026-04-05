@@ -1,12 +1,16 @@
 ---
 name: adr
 description: >
-  設計判断（ADR）の記録・管理・検証を行うスキル。
-  技術選定、フレームワーク変更、DB選定、API設計方針、インフラ構成変更、
-  アーキテクチャパターンの採用、ライブラリの選択、テスト戦略の決定など、
-  設計に関わるあらゆる場面で自動トリガーすること。
-  キーワード: ADR, 設計, 技術選定, なぜこの技術, アーキテクチャ, アーキ,
-  どれを使うべき, 比較, 選定, 採用, 検討, 壁打ち
+  新しいライブラリの導入、フレームワークの変更、DB選定、API設計、
+  インフラ構成変更など、技術的な選択を伴うタスクに着手する前に
+  必ずこのスキルで既存の設計判断(ADR)を確認すること。
+  「なぜ今の構成になっているか」の文脈を得ることで、
+  矛盾する変更や重複した検討を防ぐ。
+  設計判断を下した場合はこのスキルでADRを作成する。
+  トリガー: ADR, 設計, 技術選定, なぜこの技術, アーキテクチャ, アーキ,
+  どれを使うべき, 比較, 選定, 採用, 検討, 壁打ち, 導入, 移行, 置換,
+  構成変更, DB, API設計, インフラ, CI/CD, テスト戦略,
+  ライブラリ追加, フレームワーク
 ---
 
 # ADR Management
@@ -34,10 +38,12 @@ superseded-by: ""                # 置換先ADR番号（superseded時のみ）
 
 ## コンテキスト節約ルール（最重要）
 
-1. 本文を全件読まない
-2. まず `scripts/adr-index.sh` でフロントマターだけ取得
-3. file名 + decision で関連性を判定し、必要なADRだけ本文を開く
+SessionStart フックにより `docs/decisions/INDEX.md` が自動でコンテキストに載る。
 
+1. INDEX.md の `decision` 列で関連性を判定
+2. 必要な ADR だけ本文を開く
+
+手動で一覧を確認する場合:
 ```bash
 bash scripts/adr-index.sh docs/decisions/
 bash scripts/adr-index.sh docs/decisions/ accepted
@@ -66,22 +72,20 @@ bash scripts/adr-index.sh docs/decisions/ accepted
 
 1. 新ADR作成（Context に旧ADRへの参照と変更理由、Considered Options に旧方針も含める）
 2. 旧ADRの `status` → `superseded`、`superseded-by` に新ADR番号を記入
-3. `scripts/adr-validate.sh` で両方を検証
+3. バリデーションとインデックス更新（後述）
 
-### 捨てコードで検証する
+### バリデーションとインデックス更新
 
-1. Agent ツールで subagent を起動（isolation: "worktree"）
-2. subagent に指示: 実装して結果を返す（approach, result, effort, 所感）
-3. 結果を壁打ちの文脈で報告する（複数並列も可）
-4. worktree は結果返却後に自動破棄（コードは残らない）
+ADR ファイルを作成・更新したら必ず以下を順に実行すること:
 
-### バリデーション
+1. `scripts/adr-validate.sh <file>` でフォーマット検証。違反があればその場で修正
+2. `bash scripts/adr-index.sh docs/decisions/ --markdown > docs/decisions/INDEX.md` でインデックス再生成
 
-ADR ファイルを作成・更新したら必ず `scripts/adr-validate.sh <file>` を実行し、フォーマット違反があればその場で修正すること。
+INDEX.md は SessionStart フックでコンテキストに注入されるため、常に最新に保つこと。
 
 ### 補足
 
-- 新規作成・更新時は `adr-index.sh` で関連ADRを特定し矛盾チェック
+- 新規作成・更新時は INDEX.md で関連ADRを特定し矛盾チェック
 - 棄却した選択肢も Considered Options に含める
 
 ## ADR作成の判断基準
@@ -92,4 +96,4 @@ ADR ファイルを作成・更新したら必ず `scripts/adr-validate.sh <file
 
 ## 並列開発ルール
 
-ADRの作成・更新は Team Lead のみ。他エージェントは read-only 参照し、設計判断の必要性に気づいたらその場で報告する。
+ADRの作成・更新はメインセッションのみ。他エージェントは read-only 参照し、設計判断の必要性に気づいたらその場で報告する。
